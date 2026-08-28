@@ -4,12 +4,12 @@ x-common-config: &common-config
     context: .
     dockerfile: Dockerfile
     args:
-      NANOBOT_CHANNELS: "\${NANOBOT_CHANNELS:-discord,email,feishu,napcat,qq,telegram,websocket,wecom,weixin}"
+      NANOBOT_CHANNELS: "${NANOBOT_CHANNELS:-discord,email,feishu,napcat,qq,telegram,websocket,wecom,weixin}"
   volumes:
     - ./data:/home/nanobot/.nanobot
   user: root
   environment:
-    NANOBOT_RUN_AS_ROOT: "\${NANOBOT_RUN_AS_ROOT:-1}"
+    NANOBOT_RUN_AS_ROOT: "${NANOBOT_RUN_AS_ROOT:-1}"
 
 services:
   nanobot-gateway:
