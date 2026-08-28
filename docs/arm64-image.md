@@ -42,10 +42,10 @@ This writes `./data/config.json`, which is mounted into the container at
 ## Included additions
 
 The image uses the full `python:3.12-bookworm` base and copies in `uv`. It
-also includes Node.js/npm/npx, common build and network tools, FFmpeg,
-Chromium, Playwright plus its Chromium browser, CJK fonts, LibreOffice,
-Poppler, Pandoc, Ghostscript, qpdf, and common Python Office/document
-libraries.
+also includes Node.js/npm/npx, tmux, the @steipete/summarize CLI, common
+build and network tools, FFmpeg, Chromium, Playwright plus its Chromium
+browser, CJK fonts, LibreOffice, Poppler, Pandoc, Ghostscript, qpdf, and
+common Python Office/document libraries.
 
 The default preinstalled channel dependencies are:
 
