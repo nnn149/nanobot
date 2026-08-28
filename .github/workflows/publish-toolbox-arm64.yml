@@ -1,0 +1,78 @@
+name: Publish toolbox ARM64 image
+
+on:
+  push:
+    branches:
+      - toolbox-arm64
+    paths:
+      - Dockerfile
+      - entrypoint.sh
+      - hatch_build.py
+      - pyproject.toml
+      - uv.lock
+      - render-config.json
+      - nanobot/**
+      - scripts/**
+      - webui/**
+      - .github/workflows/publish-toolbox-arm64.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-toolbox-arm64-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  publish:
+    name: Build and publish linux/arm64
+    # Native ARM64 avoids QEMU browser/LibreOffice builds and produces an image
+    # that can run directly on the intended ARM64 deployment host.
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=toolbox-arm64
+            type=sha,prefix=toolbox-arm64-,format=short
+          labels: |
+            org.opencontainers.image.title=nanobot ARM64 toolbox
+            org.opencontainers.image.description=Complete nanobot agent toolbox with browser and Office tooling
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+      - name: Build and publish
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NANOBOT_CHANNELS=whatsapp
+          cache-from: type=gha,scope=toolbox-arm64
+          cache-to: type=gha,mode=max,scope=toolbox-arm64
