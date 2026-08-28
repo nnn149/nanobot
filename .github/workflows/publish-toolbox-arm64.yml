@@ -73,6 +73,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            NANOBOT_CHANNELS=whatsapp
+            NANOBOT_CHANNELS=discord,email,feishu,napcat,qq,telegram,websocket,wecom,weixin
           cache-from: type=gha,scope=toolbox-arm64
           cache-to: type=gha,mode=max,scope=toolbox-arm64

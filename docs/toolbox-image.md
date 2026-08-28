@@ -32,6 +32,14 @@ The image is deliberately large: full Debian, LibreOffice, two browser
 installations, fonts, and development tools trade download size for an
 immediately useful agent environment.
 
+## Preinstalled channel dependencies
+
+Builds preinstall manifest-declared dependencies for **Discord, Email, Feishu,
+NapCat, QQ, Telegram, WebSocket, WeCom, and Weixin**. Their source code, along
+with every other built-in channel, is present in the image; the difference is
+that these nine do not need their optional Python dependencies downloaded on
+first enable. WhatsApp is not in the default preinstalled list.
+
 ## Deploy without cloning or building
 
 On the ARM64 host, download the image-only Compose file once:

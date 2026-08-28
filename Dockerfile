@@ -154,8 +154,9 @@ RUN uv pip install --python "$VIRTUAL_ENV/bin/python" --no-cache \
     python -c "import docx, fitz, odf, openpyxl, pandas, playwright, pptx, xlrd"
 
 # Preinstall selected channel dependencies from their manifests. A comma-separated
-# list keeps the image configurable while preserving WhatsApp in the default image.
-ARG NANOBOT_CHANNELS=whatsapp
+# list keeps the image configurable while making the selected communications
+# channels available without a runtime dependency download.
+ARG NANOBOT_CHANNELS=discord,email,feishu,napcat,qq,telegram,websocket,wecom,weixin
 RUN for channel in $(printf '%s' "$NANOBOT_CHANNELS" | tr ',' ' '); do \
         python -m scripts.install_channel_dependencies "$channel"; \
     done
