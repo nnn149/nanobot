@@ -6,6 +6,12 @@ x-common-config: &common-config
   image: ${NANOBOT_IMAGE:-ghcr.io/nnn149/nanobot:toolbox-arm64}
   environment:
     NANOBOT_RUN_AS_ROOT: ${NANOBOT_RUN_AS_ROOT:-1}
+    # The Docker image defaults to LAN-accessible Gateway and WebUI listeners.
+    # Set NANOBOT_EXTERNAL_BIND=0 for loopback-only behavior.
+    NANOBOT_EXTERNAL_BIND: ${NANOBOT_EXTERNAL_BIND:-1}
+    NANOBOT_BIND_HOST: ${NANOBOT_BIND_HOST:-0.0.0.0}
+    # Optional. If omitted, the entrypoint generates and persists a secret.
+    NANOBOT_WEBUI_TOKEN: ${NANOBOT_WEBUI_TOKEN:-}
   volumes:
     - ${NANOBOT_DATA_DIR:-./data}:/home/nanobot/.nanobot
   init: true
