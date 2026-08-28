@@ -6,7 +6,7 @@ dir="$HOME/.nanobot"
 # Initializes the on-disk config from the committed template (wiring secrets via
 # ${VAR} env vars, keeping runtime data on the persistent disk) and appends the
 # --config flag. Logs each decision so a failed start is diagnosable in Render's
-# logs. Privilege dropping is handled below, for every root start (not just here).
+# logs.
 if [ "$RENDER" = "true" ]; then
     echo "[entrypoint] Render deploy — starting as $(id)"
     mkdir -p "$dir" || echo "[entrypoint] warning: mkdir $dir failed"
@@ -23,19 +23,22 @@ if [ "$RENDER" = "true" ]; then
     set -- "$@" --config "$config"
 fi
 
-# Drop privileges whenever the container starts as root. Render mounts the
-# persistent disk root-owned, and a plain `docker run` also defaults to root now,
-# so this covers both. Chown the data dir so the non-root user can write it, then
-# re-exec as nanobot. Fail closed: if the privilege drop cannot be performed,
-# exit rather than run the agent as root.
+# The toolbox image deliberately runs the agent as root by default, so skills
+# can use system tooling and install task-local dependencies. Set
+# NANOBOT_RUN_AS_ROOT=0 to retain the upstream nanobot-user privilege boundary.
 if [ "$(id -u)" = "0" ]; then
-    chown -R nanobot:nanobot "$dir" 2>/dev/null || echo "[entrypoint] warning: chown $dir failed"
-    if setpriv --reuid=nanobot --regid=nanobot --init-groups true 2>/dev/null; then
-        echo "[entrypoint] dropping privileges to nanobot via setpriv"
-        exec setpriv --reuid=nanobot --regid=nanobot --init-groups nanobot "$@"
+    if [ "${NANOBOT_RUN_AS_ROOT:-1}" = "0" ]; then
+        chown -R nanobot:nanobot "$dir" 2>/dev/null || echo "[entrypoint] warning: chown $dir failed"
+        if setpriv --reuid=nanobot --regid=nanobot --init-groups true 2>/dev/null; then
+            echo "[entrypoint] NANOBOT_RUN_AS_ROOT=0 — dropping privileges to nanobot"
+            exec setpriv --reuid=nanobot --regid=nanobot --init-groups nanobot "$@"
+        fi
+        echo "[entrypoint] error: requested non-root mode but setpriv failed" >&2
+        exit 1
     fi
-    echo "[entrypoint] error: started as root but setpriv privilege drop failed — refusing to run as root" >&2
-    exit 1
+
+    echo "[entrypoint] running as root (set NANOBOT_RUN_AS_ROOT=0 for non-root mode)"
+    exec nanobot "$@"
 fi
 
 # Already non-root: make sure the data dir is writable before starting.
