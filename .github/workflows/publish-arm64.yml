@@ -65,6 +65,7 @@ jobs:
           build-args: |
             UV_VERSION=0.12.7
             PLAYWRIGHT_VERSION=1.55.0
+            SUMMARIZE_VERSION=0.21.8
             NANOBOT_CHANNELS=discord,email,feishu,napcat,qq,telegram,websocket,wecom,weixin
           cache-from: type=gha,scope=nanobot-arm64
           cache-to: type=gha,mode=max,scope=nanobot-arm64
