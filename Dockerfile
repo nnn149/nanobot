@@ -19,6 +19,7 @@ COPY --from=uv /uv /uvx /bin/
 COPY --from=webui-builder /usr/local /usr/local
 
 ARG PLAYWRIGHT_VERSION=1.55.0
+ARG SUMMARIZE_VERSION=0.21.8
 ARG NANOBOT_CHANNELS=discord,email,feishu,napcat,qq,telegram,websocket,wecom,weixin
 
 # General development tools, browser automation, fonts, Office and PDF tools.
@@ -52,6 +53,7 @@ RUN apt-get update && \
         procps \
         psmisc \
         strace \
+        tmux \
         zip \
         unzip \
         p7zip-full \
@@ -91,8 +93,13 @@ RUN apt-get update && \
         pandoc \
         ghostscript \
         qpdf && \
-    npm install --global --no-audit --no-fund "playwright@${PLAYWRIGHT_VERSION}" && \
+    npm install --global --no-audit --no-fund \
+        "playwright@${PLAYWRIGHT_VERSION}" \
+        "@steipete/summarize@${SUMMARIZE_VERSION}" && \
     PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers playwright install --with-deps chromium && \
+    playwright --version && \
+    summarize --version && \
+    tmux -V && \
     fc-cache -f && \
     rm -rf /var/lib/apt/lists/* /root/.npm
 
