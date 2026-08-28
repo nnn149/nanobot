@@ -21,7 +21,7 @@ fi
 # The arm64 image runs as root by default so installed tools and bind mounts are
 # immediately usable. Set NANOBOT_RUN_AS_ROOT=0 to retain the official
 # non-root/setpriv behavior.
-if [ "\${NANOBOT_RUN_AS_ROOT:-1}" = "1" ]; then
+if [ "${NANOBOT_RUN_AS_ROOT:-1}" = "1" ]; then
     echo "[entrypoint] running as root"
     exec nanobot "$@"
 fi
