@@ -81,6 +81,66 @@ If the GHCR package is private, authenticate the target host with
 `docker login ghcr.io` first. Make the package public in its GitHub Package
 settings if unauthenticated pulls are desired.
 
+## Docker WebUI bind and authentication
+
+For the image-only Docker Compose deployment, the entrypoint automatically
+prepares the persistent `data/config.json` before starting the gateway:
+
+- `gateway.host` defaults to `0.0.0.0`;
+- `channels.websocket.host` defaults to `0.0.0.0`;
+- `channels.websocket.port` defaults to `8765`;
+- `websocketRequiresToken` is enabled;
+- if neither `token` nor `tokenIssueSecret` exists, a random
+  `tokenIssueSecret` is generated once and saved in `data/config.json`.
+
+This is why a fresh `data` directory does not need a manually created config
+file. Existing configuration values are preserved except for the Docker bind
+defaults above. The entrypoint only performs this initialization for the
+`gateway` command.
+
+The generated secret can be read from the host:
+
+```sh
+jq -r '.channels.websocket.tokenIssueSecret' data/config.json
+```
+
+Or from the running container:
+
+```sh
+docker compose -f docker-compose.toolbox.yml exec nanobot-gateway \
+  sh -lc 'jq -r ".channels.websocket.tokenIssueSecret" /home/nanobot/.nanobot/config.json'
+```
+
+To provide a stable secret yourself, put this in `.env` before starting:
+
+```dotenv
+NANOBOT_WEBUI_TOKEN=replace-with-a-long-random-secret
+```
+
+The value is stored as `tokenIssueSecret`; do not commit the `.env` file.
+The WebUI is then available at:
+
+```text
+http://<ARM64-host-IP>:8765
+```
+
+The gateway health endpoint is available at:
+
+```text
+http://<ARM64-host-IP>:18790/health
+```
+
+To deliberately keep the application local-only, put this in `.env`:
+
+```dotenv
+NANOBOT_EXTERNAL_BIND=0
+```
+
+The host-side Docker port mappings are also configurable with
+`NANOBOT_WEBUI_PORT`, `NANOBOT_GATEWAY_PORT`, and `NANOBOT_API_PORT`.
+Exposing the WebUI or health endpoint to an untrusted network requires a
+firewall or reverse proxy.
+
 ## Runtime and browser safety
 
 The toolbox entrypoint runs as **root by default**, as requested for broad
