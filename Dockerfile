@@ -1,7 +1,7 @@
 # Use a full Docker Official Python image instead of the slim runtime.
 # uv is copied in as a standalone binary from the official Astral image.
 ARG UV_VERSION=0.12.7
-FROM ghcr.io/astral-sh/uv:\${UV_VERSION} AS uv
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
 # Keep the project's existing WebUI build toolchain.
 FROM node:24-bookworm-slim AS webui-builder
@@ -91,7 +91,7 @@ RUN apt-get update && \
         pandoc \
         ghostscript \
         qpdf && \
-    npm install --global --no-audit --no-fund "playwright@\${PLAYWRIGHT_VERSION}" && \
+    npm install --global --no-audit --no-fund "playwright@${PLAYWRIGHT_VERSION}" && \
     PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers playwright install --with-deps chromium && \
     fc-cache -f && \
     rm -rf /var/lib/apt/lists/* /root/.npm
@@ -111,7 +111,7 @@ COPY pyproject.toml README.md LICENSE THIRD_PARTY_NOTICES.md hatch_build.py ./
 RUN mkdir -p nanobot && touch nanobot/__init__.py && \
     if [ -n "$NANOBOT_EXTRAS" ]; then \
         NANOBOT_SKIP_WEBUI_BUILD=1 uv pip install \
-            --python "$VIRTUAL_ENV/bin/python" --no-cache ".[\${NANOBOT_EXTRAS}]"; \
+            --python "$VIRTUAL_ENV/bin/python" --no-cache ".[${NANOBOT_EXTRAS}]"; \
     else \
         NANOBOT_SKIP_WEBUI_BUILD=1 uv pip install \
             --python "$VIRTUAL_ENV/bin/python" --no-cache .; \
@@ -128,7 +128,7 @@ RUN NANOBOT_SKIP_WEBUI_BUILD=1 uv pip install \
 # Keep common document-processing libraries available even when a future
 # upstream dependency split changes the base project extras.
 RUN uv pip install --python "$VIRTUAL_ENV/bin/python" --no-cache \
-        "playwright==\${PLAYWRIGHT_VERSION}" \
+        "playwright==${PLAYWRIGHT_VERSION}" \
         python-docx \
         openpyxl \
         python-pptx \
